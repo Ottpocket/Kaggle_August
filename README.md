@@ -8,6 +8,7 @@ Ideas for competing in the August Tabular comp.
 4. DAE features
 5. Predict 0s
 6. Predict levels (0,1,2,3,4) where each level corresponds to a range of TARGET values
+7. PseudoLabelling
 
 ## Fancy Models 
 1. TabNet
@@ -19,6 +20,7 @@ Ideas for competing in the August Tabular comp.
 
 ## Kernels to look at 
 1. DAE https://www.kaggle.com/cdeotte/dae-book1c/comments
+2. pseudolabels https://www.kaggle.com/alexryzhkov/tps-lightautoml-baseline-with-pseudolabels
 
 ## TODO
 1. Deotte style MultilabelStratifiedKFold baseline.  Used in Kernel 1.
