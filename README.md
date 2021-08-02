@@ -19,4 +19,8 @@ Ideas for competing in the August Tabular comp.
 
 ## Kernels to look at 
 1. DAE https://www.kaggle.com/cdeotte/dae-book1c/comments
-2. 
+
+## TODO
+1. Deotte style MultilabelStratifiedKFold baseline.  Used in Kernel 1.
+2. Enable WandB for team.
+3. 
