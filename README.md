@@ -5,7 +5,7 @@ Ideas for competing in the August Tabular comp.
 1. Turn columns to ordinal (1,2,...,n) instead of real valued.
 2. Likelihood encode the columns 
 3. Use rf to find most common column interactions and combine
-4. DAE features
+4. DAE features.  Consider taking the mean of n models features.
 5. Predict 0s
 6. Predict levels (0,1,2,3,4) where each level corresponds to a range of TARGET values
 7. PseudoLabelling
