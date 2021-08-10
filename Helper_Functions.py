@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import mean_squared_error
+from time import time
 
 def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
               cross_val_type = StratifiedKFold, cross_val_repeats = 3,
