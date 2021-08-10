@@ -53,7 +53,7 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
                 test[col] = 0
         FEATURES_ALL= FEATURES + ME_COL_NAMES
 
-    for random_state in range(config['repeats']):
+    for random_state in range(cross_val_repeats):
         skf = cross_val_type(n_splits=n_folds, shuffle=True, random_state=random_state)
 
         for f, (t_idx, v_idx) in enumerate(skf.split(X=train, y=train[TARGET])):
