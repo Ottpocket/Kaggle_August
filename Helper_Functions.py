@@ -6,7 +6,8 @@ from time import time
 
 def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
               cross_val_type = StratifiedKFold, cross_val_repeats = 3,
-              mean_encode=False, FEATURES_TO_ME = [], n_folds = 5):
+              mean_encode=False, FEATURES_TO_ME = [], n_folds = 5,
+              name = 'preds'):
     '''
     Trains a model on FEATURES from train to predict TARGET to get out of fold
     predictions for the train and predictions for the test.
@@ -25,6 +26,7 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
     mean_encode: (bool) Do you want to mean encode?
     FEATURES_TO_ME: (list of cols) columns to be mean encoded
     n_folds: (int) number of folds for getting the out of fold preds
+    name: (str) name of the columns created
 
     OUTPUTS
     __________
@@ -34,10 +36,10 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
     preds: (pd.DataFrame) mean of the predictions from each model
     '''
     if probabilities:
-        predictions = [f'preds_{i}' for i in train[TARGET].unique()]
+        predictions = [f'{preds}{i}' for i in train[TARGET].unique()]
         predictions.sort()
     else:
-        predictions = ['preds']
+        predictions = [name]
     oof = pd.DataFrame(np.zeros(shape = (train.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
     preds = pd.DataFrame(np.zeros(shape = (test.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
 
