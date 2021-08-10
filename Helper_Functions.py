@@ -1,5 +1,7 @@
-import pandas as import pd
+import pandas as pd
 import numpy as np
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import mean_squared_error
 
 def to_bin(df, num_bins, binned_features, test = None):
     '''
@@ -34,3 +36,91 @@ def to_bin(df, num_bins, binned_features, test = None):
 
         if test is not None:
             test[f'{feat}_bin'] = pd.cut(test[feat], bins, labels=False, include_lowest=True)
+
+
+
+def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
+              cross_val_type = StratifiedKFold, cross_val_repeats = 3,
+              mean_encode=False, FEATURES_TO_ME = [], n_folds = 5):
+    '''
+    Trains a model on FEATURES from train to predict TARGET to get out of fold
+    predictions for the train and predictions for the test.
+
+    ARGUMENTS
+    ___________
+    train: (pd.DataFrame) df containing FEATURES and TARGET
+    test: (pd.DataFrame) test df containing FEATURES
+    model: (sklearn compatable model) model to predict
+    TARGET: (str ) the target to be predicted
+    probabilities: (bool) whether to get probabilities from the model.
+                   This is for CLASSIFICATION only!
+    cross_val_type: (sklearn model selection) how to split the data
+    cross_val_repeats: (int) how many times to repeat the cross validation
+    mean_encode: (bool) Do you want to mean encode?
+    FEATURES_TO_ME: (list of cols) columns to be mean encoded
+    n_folds: (int) number of folds for getting the out of fold preds
+
+    OUTPUTS
+    __________
+    scores: (list) list of scores of oof predictions for each run
+    oof: (pd.DataFrame) out of frame predictions.  Columns are named after the
+         number of the cross_val.
+    preds: (pd.DataFrame) mean of the predictions from each model
+    '''
+    oof = pd.DataFrame()
+    preds = pd.DataFrame()
+    if probabilities:
+        predictions = [f'preds_{i}' for i in X[TARGET].unique()].sort()
+    else:
+        predictions = ['preds']
+
+    to_categorise = list(fe.Feature.values[:5])
+    FEATURES_ALL = FEATURES
+
+    #Just to get the column names for later.  All values will be reassigned in the xval part
+    if mean_encode:
+        encodings = Mean_Encoding(train, FEATURES_TO_ME, TARGET = TARGET, STAT=['mean','var'])
+        ME_COL_NAMES = list(encodings.columns)
+        for col in ME_COL_NAMES:
+            if col not in train.columns:
+                train[col] = 0
+            if col not in test.columns:
+                test[col] = 0
+        FEATURES_ALL= FEATURES + ME_COL_NAMES
+
+    for random_state in range(config['repeats']):
+        skf = cross_val_type(n_splits=n_folds, shuffle=True, random_state=random_state)
+        oof[random_state] = np.zeros(train.shape[0])
+
+        for f, (t_idx, v_idx) in enumerate(skf.split(X=train, y=train[TARGET])):
+            start = time()
+            train_fold = train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[t_idx].reset_index(drop=True).copy()
+            val_fold =   train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[v_idx].reset_index(drop=True).copy()
+
+            #Mean Encoding
+            if mean_encode:
+                #Getting the mean encoded columns
+                train_encoded_cols = Mean_Encoding(train_fold, FEATURES_TO_ME, TARGET = TARGET, STAT=['mean','var'])
+                val_encoded_cols = Mean_Encoding_Val(train_fold, val_fold, FEATURES_TO_ME, TARGET = TARGET, STAT=['mean','var'])
+                test_encoded_cols= Mean_Encoding_Val(train_fold, test, FEATURES_TO_ME, TARGET = TARGET, STAT=['mean','var'])
+
+                #Adding the encoded columns to the train, val, and test
+                train_fold[ME_COL_NAMES] = train_encoded_cols
+                val_fold[ME_COL_NAMES] = val_encoded_cols
+                test[ME_COL_NAMES] = test_encoded_cols
+
+
+            #The model
+            model.fit(train_fold[FEATURES_ALL], train_fold[TARGET])
+            oof[predictions].iloc[v_idx] = model.predict(val_fold[FEATURES_ALL]) / cross_val_repeats
+            preds[predictions] = model.predict(test[FEATURES_ALL]) / (cross_val_repeats * n_folds)
+
+            #Deleting excess
+            if mean_encode:
+                del train_fold, val_fold, train_encoded_cols, val_encoded_cols, test_encoded_cols; gc.collect()
+
+            print(f'{time() - start :.2f}', end=', ')
+        print()
+
+        scores = [mean_squared_error(train[TARGET].values, oof[col].values, squared=False) for col in oof.columns]
+    return scores, oof, preds
