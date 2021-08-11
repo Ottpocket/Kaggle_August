@@ -36,7 +36,7 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
     preds: (pd.DataFrame) mean of the predictions from each model
     '''
     if probabilities:
-        predictions = [f'{preds}{i}' for i in train[TARGET].unique()]
+        predictions = [f'{name}{i}' for i in train[TARGET].unique()]
         predictions.sort()
     else:
         predictions = [name]
