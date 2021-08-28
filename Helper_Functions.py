@@ -70,9 +70,9 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
             train_fold = train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[t_idx].reset_index(drop=True).copy()
             val_fold =   train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[v_idx].reset_index(drop=True).copy()
             if pseudolabel is not None:
-                pseudo_fold = test[list(set(FEATURES_TO_ME +FEATURES))+[pseudolabel]].iloc[t_idx].reset_index(drop=True).copy()
+                pseudo_fold = test[list(set(FEATURES_TO_ME +FEATURES))+[pseudolabel]].copy()
                 pseudo_fold.rename(columns={pseudolabel:TARGET})
-                train_fold = pd.concat([train_fold, pseudo_fold])
+                train_fold = pd.concat([train_fold, pseudo_fold]).reset_index(drop=True)
                 del pseudo_fold
 
             #Mean Encoding
