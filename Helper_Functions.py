@@ -45,8 +45,9 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
     oof = pd.DataFrame(np.zeros(shape = (train.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
     preds = pd.DataFrame(np.zeros(shape = (test.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
 
-    if pseudolabel not in test.columns:
-        raise Exception(f'ERROR: {pseudolabel} not in test.')
+    if pseudolabel is not None:
+        if pseudolabel not in test.columns:
+            raise Exception(f'ERROR: {pseudolabel} not in test.')
 
     FEATURES_ALL = FEATURES
 
