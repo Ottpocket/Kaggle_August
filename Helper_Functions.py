@@ -7,7 +7,7 @@ from time import time
 def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
               cross_val_type = StratifiedKFold, cross_val_repeats = 3,
               mean_encode=False, FEATURES_TO_ME = [], n_folds = 5,
-              name = 'preds'):
+              name = 'preds', pseudolabel=None):
     '''
     Trains a model on FEATURES from train to predict TARGET to get out of fold
     predictions for the train and predictions for the test.
@@ -27,6 +27,8 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
     FEATURES_TO_ME: (list of cols) columns to be mean encoded
     n_folds: (int) number of folds for getting the out of fold preds
     name: (str) name of the columns created
+    pseudolabel: (str) name of column to be used as a pseudolabel in test data.
+                 If None, no pseudolabelling done.
 
     OUTPUTS
     __________
@@ -42,6 +44,9 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
         predictions = [name]
     oof = pd.DataFrame(np.zeros(shape = (train.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
     preds = pd.DataFrame(np.zeros(shape = (test.shape[0], len(predictions)) )).rename(columns={i:feat for i, feat in enumerate(predictions)})
+
+    if pseudolabel not in test.columns:
+        raise Exception(f'ERROR: {pseudolabel} not in test.')
 
     FEATURES_ALL = FEATURES
 
@@ -63,6 +68,11 @@ def cross_val(train, test, FEATURES, model, TARGET, probabilities = False,
             start = time()
             train_fold = train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[t_idx].reset_index(drop=True).copy()
             val_fold =   train[list(set(FEATURES_TO_ME +FEATURES))+[TARGET]].iloc[v_idx].reset_index(drop=True).copy()
+            if pseudolabel is not None:
+                pseudo_fold = test[list(set(FEATURES_TO_ME +FEATURES))+[pseudolabel]].iloc[t_idx].reset_index(drop=True).copy()
+                pseudo_fold.rename(columns={pseudolabel:TARGET})
+                train_fold = pd.concat([train_fold, pseudo_fold])
+                del pseudo_fold
 
             #Mean Encoding
             if mean_encode:
